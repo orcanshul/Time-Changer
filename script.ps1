@@ -117,3 +117,20 @@ $btnRandomize = New-StyledButton "Randomize" 20  ([System.Drawing.Color]::FromAr
 $btnApply     = New-StyledButton "Apply"     143 ([System.Drawing.Color]::FromArgb(20, 160, 70))
 $btnRestore   = New-StyledButton "Restore"   266 ([System.Drawing.Color]::FromArgb(180, 45, 45))
 
+$btnApply.Enabled = $false
+
+$btnRandomize.Add_Click({
+    $minY = [int]$numMin.Value
+    $maxY = [int]$numMax.Value
+    if ($minY -gt $maxY) { $minY, $maxY = $maxY, $minY }
+    $year   = Get-Random -Minimum $minY -Maximum ($maxY + 1)
+    $month  = Get-Random -Minimum 1    -Maximum 13
+    $day    = Get-Random -Minimum 1    -Maximum 29   # 28 is safe for every month
+    $hour   = Get-Random -Minimum 0    -Maximum 24
+    $minute = Get-Random -Minimum 0    -Maximum 60
+    $second = Get-Random -Minimum 0    -Maximum 60
+    $script:pendingDate = Get-Date -Year $year -Month $month -Day $day -Hour $hour -Minute $minute -Second $second
+    $lblRandom.Text = $script:pendingDate.ToString("MM/dd/yyyy  HH:mm:ss")
+    $btnApply.Enabled = $true
+})
+
