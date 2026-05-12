@@ -134,3 +134,43 @@ $btnRandomize.Add_Click({
     $btnApply.Enabled = $true
 })
 
+$btnApply.Add_Click({
+    if ($script:pendingDate) {
+        Set-Date -Date $script:pendingDate | Out-Null
+        $lblCurrent.Text = (Get-Date).ToString("MM/dd/yyyy  HH:mm:ss")
+        [System.Windows.Forms.MessageBox]::Show(
+            "System time set to:`n$($script:pendingDate.ToString('MM/dd/yyyy  HH:mm:ss'))",
+            "Applied", "OK", "Information") | Out-Null
+    }
+})
+
+$btnRestore.Add_Click({
+    Set-Date -Date $originalTime | Out-Null
+    $lblCurrent.Text = (Get-Date).ToString("MM/dd/yyyy  HH:mm:ss")
+    $lblRandom.Text = "-"
+    $btnApply.Enabled = $false
+    $script:pendingDate = $null
+    [System.Windows.Forms.MessageBox]::Show(
+        "Restored to launch time:`n$($originalTime.ToString('MM/dd/yyyy  HH:mm:ss'))",
+        "Restored", "OK", "Information") | Out-Null
+})
+
+$form.Controls.AddRange(@($btnRandomize, $btnApply, $btnRestore))
+
+# --- Status bar ---
+$lblStatus = New-Object System.Windows.Forms.Label
+$lblStatus.Text = "Running as Administrator  |  Restore resets to time at script launch"
+$lblStatus.Font = New-Object System.Drawing.Font("Segoe UI", 7.5)
+$lblStatus.ForeColor = [System.Drawing.Color]::FromArgb(100, 100, 120)
+$lblStatus.Location = New-Object System.Drawing.Point(20, 283)
+$lblStatus.Size = New-Object System.Drawing.Size(380, 18)
+$form.Controls.Add($lblStatus)
+
+# --- Live clock ticker ---
+$timer = New-Object System.Windows.Forms.Timer
+$timer.Interval = 1000
+$timer.Add_Tick({ $lblCurrent.Text = (Get-Date).ToString("MM/dd/yyyy  HH:mm:ss") })
+$timer.Start()
+
+$form.Add_FormClosing({ $timer.Stop() })
+$form.ShowDialog() | Out-Null
